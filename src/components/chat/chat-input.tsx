@@ -1,16 +1,21 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useChat } from "../../contexts/chat-context";
+import { useChatStore, usePropertyStore } from "@/stores";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Paperclip, X, Mic, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAudioRecorder } from "@/lib/hooks/use-audio-recorder";
+import { useAudioRecorder } from "@/hooks";
+import { transcriptionService } from "@/services";
 import { toast } from "sonner";
 
 export function ChatInput() {
-  const { sendMessage, state } = useChat();
+  const sendMessage = useChatStore((state) => state.sendMessage);
+  const isLoading = useChatStore((state) => state.isLoading);
+  const propertyData = usePropertyStore((state) => state.data);
+  const updatePropertyData = usePropertyStore((state) => state.updateData);
+  
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { recordingState, startRecording, stopRecording, recordingTime } = useAudioRecorder();
@@ -19,7 +24,7 @@ export function ChatInput() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (state.isLoading) return;
+    if (isLoading) return;
 
     // Vider l'input immédiatement
     const messageContent = input.trim();
@@ -31,7 +36,7 @@ export function ChatInput() {
     }
 
     // Envoyer le message
-    await sendMessage(messageContent);
+    await sendMessage(messageContent, propertyData, updatePropertyData);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -69,20 +74,8 @@ export function ChatInput() {
           return;
         }
 
-        // Envoyer le fichier audio à l'API de transcription
-        const formData = new FormData();
-        formData.append("audio", audioFile);
-
-        const response = await fetch("/api/transcribe", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error("Erreur lors de la transcription");
-        }
-
-        const { text } = await response.json() as { text: string };
+        // Utiliser le service de transcription
+        const text = await transcriptionService.transcribe(audioFile);
 
         // Ajouter la transcription à la suite du texte existant
         setInput(prevInput => {
@@ -138,7 +131,7 @@ export function ChatInput() {
                 recordingState === "recording" && "text-red-500 hover:text-red-600"
               )}
               onClick={handleAudioRecording}
-              disabled={isTranscribing || state.isLoading}
+              disabled={isTranscribing || isLoading}
               title={
                 recordingState === "recording"
                   ? `Arrêter l'enregistrement (${recordingTime}s)`
@@ -158,7 +151,7 @@ export function ChatInput() {
         <Button
           type="submit"
           size="sm"
-          disabled={!input.trim() || state.isLoading || recordingState === "recording" || isTranscribing}
+          disabled={!input.trim() || isLoading || recordingState === "recording" || isTranscribing}
           className="h-11 w-11 p-0"
         >
           <Send className="h-4 w-4" />

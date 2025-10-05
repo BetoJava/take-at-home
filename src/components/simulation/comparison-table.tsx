@@ -1,8 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/simulation";
-import type { SimulationResults } from "@/lib/simulation";
+import { simulationService } from "@/services";
+import type { SimulationResults } from "@/types";
 
 interface ComparisonTableProps {
   simulation: SimulationResults;
@@ -41,10 +41,10 @@ export function ComparisonTable({ simulation }: ComparisonTableProps) {
               <tr className="border-b">
                 <td className="py-3 px-4 text-sm font-medium">Revenus locatifs</td>
                 <td className="py-3 px-4 text-sm text-right">
-                  {formatCurrency(firstYear.microBicRevenue)}
+                  {simulationService.formatCurrency(firstYear.microBicRevenue)}
                 </td>
                 <td className="py-3 px-4 text-sm text-right">
-                  {formatCurrency(firstYear.reelRevenue)}
+                  {simulationService.formatCurrency(firstYear.reelRevenue)}
                 </td>
                 <td className="py-3 px-4 text-sm text-right text-muted-foreground">-</td>
               </tr>
@@ -52,26 +52,26 @@ export function ComparisonTable({ simulation }: ComparisonTableProps) {
               <tr className="border-b">
                 <td className="py-3 px-4 text-sm font-medium">Revenu imposable</td>
                 <td className="py-3 px-4 text-sm text-right">
-                  {formatCurrency(firstYear.microBicTaxableIncome)}
+                  {simulationService.formatCurrency(firstYear.microBicTaxableIncome)}
                 </td>
                 <td className="py-3 px-4 text-sm text-right">
-                  {formatCurrency(firstYear.reelTaxableIncome)}
+                  {simulationService.formatCurrency(firstYear.reelTaxableIncome)}
                 </td>
                 <td className="py-3 px-4 text-sm text-right text-green-600">
-                  {formatCurrency(firstYear.microBicTaxableIncome - firstYear.reelTaxableIncome)}
+                  {simulationService.formatCurrency(firstYear.microBicTaxableIncome - firstYear.reelTaxableIncome)}
                 </td>
               </tr>
 
               <tr className="bg-muted/50">
                 <td className="py-3 px-4 text-sm font-semibold">Impôt estimé</td>
                 <td className="py-3 px-4 text-sm text-right font-semibold">
-                  {formatCurrency(firstYear.microBicTax)}
+                  {simulationService.formatCurrency(firstYear.microBicTax)}
                 </td>
                 <td className="py-3 px-4 text-sm text-right font-semibold">
-                  {formatCurrency(firstYear.reelTax)}
+                  {simulationService.formatCurrency(firstYear.reelTax)}
                 </td>
                 <td className="py-3 px-4 text-sm text-right font-semibold text-green-600">
-                  {formatCurrency(firstYear.taxSavings)}
+                  {simulationService.formatCurrency(firstYear.taxSavings)}
                 </td>
               </tr>
             </tbody>
@@ -82,7 +82,7 @@ export function ComparisonTable({ simulation }: ComparisonTableProps) {
           <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
             <p className="text-sm font-medium text-green-900 dark:text-green-100">
               💡 Le régime Réel vous ferait économiser{" "}
-              <span className="font-bold">{formatCurrency(firstYear.taxSavings)}</span> d'impôts
+              <span className="font-bold">{simulationService.formatCurrency(firstYear.taxSavings)}</span> d'impôts
               la première année
             </p>
           </div>
@@ -94,29 +94,29 @@ export function ComparisonTable({ simulation }: ComparisonTableProps) {
             <div className="space-y-2 text-sm text-blue-900 dark:text-blue-100">
               <div className="flex justify-between">
                 <span>Revenus locatifs</span>
-                <span className="font-medium">{formatCurrency(firstYear.reelRevenue)}</span>
+                <span className="font-medium">{simulationService.formatCurrency(firstYear.reelRevenue)}</span>
               </div>
               {firstYear.annualCharges > 0 && (
                 <div className="flex justify-between text-blue-700 dark:text-blue-300">
                   <span>− Charges</span>
-                  <span className="font-medium">−{formatCurrency(firstYear.annualCharges)}</span>
+                  <span className="font-medium">−{simulationService.formatCurrency(firstYear.annualCharges)}</span>
                 </div>
               )}
               {firstYear.loanInterest > 0 && (
                 <div className="flex justify-between text-blue-700 dark:text-blue-300">
                   <span>− Intérêts d'emprunt</span>
-                  <span className="font-medium">−{formatCurrency(firstYear.loanInterest)}</span>
+                  <span className="font-medium">−{simulationService.formatCurrency(firstYear.loanInterest)}</span>
                 </div>
               )}
               {firstYear.annualDepreciation > 0 && (
                 <div className="flex justify-between text-blue-700 dark:text-blue-300">
                   <span>− Amortissement</span>
-                  <span className="font-medium">−{formatCurrency(firstYear.annualDepreciation)}</span>
+                  <span className="font-medium">−{simulationService.formatCurrency(firstYear.annualDepreciation)}</span>
                 </div>
               )}
               <div className="pt-2 border-t border-blue-300 dark:border-blue-700 flex justify-between font-bold">
                 <span>= Revenu imposable</span>
-                <span>{formatCurrency(firstYear.reelTaxableIncome)}</span>
+                <span>{simulationService.formatCurrency(firstYear.reelTaxableIncome)}</span>
               </div>
             </div>
           </div>

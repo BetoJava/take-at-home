@@ -6,11 +6,11 @@ import { SimulationPanel } from "@/components/simulation/simulation-sheet";
 import { BarChart3Icon, MessageSquareIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { usePropertyInvestment } from "@/contexts/property-investment-context";
+import { usePropertyStore } from "@/stores";
 
 export default function Home() {
   const [showSimulation, setShowSimulation] = useState(true);
-  const { data } = usePropertyInvestment();
+  const data = usePropertyStore((state) => state.data);
   const hasData = data?.purchasePrice && data?.monthlyRent;
 
   return (

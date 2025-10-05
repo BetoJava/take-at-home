@@ -11,8 +11,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import type { SimulationResults } from "@/lib/simulation";
-import { formatCurrency } from "@/lib/simulation";
+import type { SimulationResults } from "@/types";
+import { simulationService } from "@/services";
 
 interface SimulationChartProps {
   simulation: SimulationResults;
@@ -64,7 +64,7 @@ export function SimulationChart({ simulation }: SimulationChartProps) {
                 boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
               }}
               labelStyle={{ color: "hsl(var(--foreground))" }}
-              formatter={(value: number) => [formatCurrency(value), ""]}
+              formatter={(value: number) => [simulationService.formatCurrency(value), ""]}
             />
             <Legend
               wrapperStyle={{
@@ -93,7 +93,7 @@ export function SimulationChart({ simulation }: SimulationChartProps) {
         <div className="mt-4 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
           <p className="text-sm font-medium text-green-900 dark:text-green-100">
             💡 Sur {simulation.yearlyData.length} {simulation.yearlyData.length > 1 ? "années" : "année"} de détention, le passage au Réel permettrait d'économiser{" "}
-            <span className="font-bold">{formatCurrency(simulation.totalTaxSavings)}</span>
+            <span className="font-bold">{simulationService.formatCurrency(simulation.totalTaxSavings)}</span>
           </p>
         </div>
       </CardContent>

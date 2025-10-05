@@ -4,20 +4,20 @@ import { useState } from "react";
 import { Card, CardContent, CardTitle, CardDescription, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { usePropertyInvestment } from "@/contexts/property-investment-context";
-import { simulateLMNP, formatCurrency } from "@/lib/simulation";
+import { usePropertyStore } from "@/stores";
+import { simulationService } from "@/services";
 import { SimulationChart } from "./simulation-chart";
 import { ComparisonTable } from "./comparison-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Clock } from "lucide-react";
 
 export function SimulationPanel() {
-  const { data } = usePropertyInvestment();
+  const data = usePropertyStore((state) => state.data);
   const [projectionDuration, setProjectionDuration] = useState(10);
 
   // Calculer la simulation avec la durée personnalisée
   const simulation = data
-    ? simulateLMNP({
+    ? simulationService.simulate({
       ...data,
       projectionDuration,
     })
@@ -60,20 +60,20 @@ export function SimulationPanel() {
                   <div>
                     <p className="text-sm text-muted-foreground">Prix d'achat</p>
                     <p className="text-lg font-semibold">
-                      {data.purchasePrice ? formatCurrency(data.purchasePrice) : "Non renseigné"}
+                      {data.purchasePrice ? simulationService.formatCurrency(data.purchasePrice) : "Non renseigné"}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Loyer mensuel</p>
                     <p className="text-lg font-semibold">
-                      {data.monthlyRent ? formatCurrency(data.monthlyRent) : "Non renseigné"}
+                      {data.monthlyRent ? simulationService.formatCurrency(data.monthlyRent) : "Non renseigné"}
                     </p>
                   </div>
                   {data.loanAmount && typeof data.loanAmount === 'number' && data.loanAmount > 0 ? (
                     <>
                       <div>
                         <p className="text-sm text-muted-foreground">Montant emprunté</p>
-                        <p className="text-lg font-semibold">{formatCurrency(data.loanAmount)}</p>
+                        <p className="text-lg font-semibold">{simulationService.formatCurrency(data.loanAmount)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Durée de l'emprunt</p>

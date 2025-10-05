@@ -1,6 +1,6 @@
 "use client";
 
-import { useChat } from "../../contexts/chat-context";
+import { useChatStore, usePropertyStore } from "@/stores";
 import { Button } from "@/components/ui/button";
 import { Home, Calculator, TrendingUp } from "lucide-react";
 
@@ -26,11 +26,14 @@ const suggestions = [
 ];
 
 export function MessageSuggestions() {
-  const { sendMessage, state } = useChat();
+  const sendMessage = useChatStore((state) => state.sendMessage);
+  const isLoading = useChatStore((state) => state.isLoading);
+  const propertyData = usePropertyStore((state) => state.data);
+  const updatePropertyData = usePropertyStore((state) => state.updateData);
 
   const handleSuggestionClick = async (message: string) => {
-    if (state.isLoading) return;
-    await sendMessage(message);
+    if (isLoading) return;
+    await sendMessage(message, propertyData, updatePropertyData);
   };
 
   return (
@@ -47,7 +50,7 @@ export function MessageSuggestions() {
               variant="outline"
               className="h-auto justify-start p-4 text-left"
               onClick={() => handleSuggestionClick(suggestion.message)}
-              disabled={state.isLoading}
+              disabled={isLoading}
             >
               <div className="flex items-start gap-3">
                 <Icon className="mt-0.5 h-4 w-4 text-muted-foreground" />

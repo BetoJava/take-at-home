@@ -1,6 +1,6 @@
 "use client";
 
-import { type Message } from "../../contexts/chat-context";
+import type { Message } from "@/types";
 import { MarkdownRenderer } from "./markdown-renderer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Bot } from "lucide-react";

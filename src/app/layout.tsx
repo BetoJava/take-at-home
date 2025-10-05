@@ -3,8 +3,6 @@ import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
-import { PropertyInvestmentProvider } from "@/contexts/property-investment-context";
-import { ChatProvider } from "@/contexts/chat-context";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -24,12 +22,8 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${geist.variable}`}>
       <body>
-        <PropertyInvestmentProvider>
-          <ChatProvider>
-            {children}
-            <Toaster />
-          </ChatProvider>
-        </PropertyInvestmentProvider>
+        {children}
+        <Toaster />
       </body>
     </html>
   );
