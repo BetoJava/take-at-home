@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useChatStore, usePropertyStore } from "@/stores";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Paperclip, X, Mic, Square } from "lucide-react";
+import { Send, Mic, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAudioRecorder } from "@/hooks";
 import { transcriptionService } from "@/services";

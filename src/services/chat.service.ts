@@ -1,4 +1,4 @@
-import type { ChatMessage, PropertyInvestmentData, StreamResponse } from "@/types";
+import type { PropertyInvestmentData, StreamResponse } from "@/types";
 
 /**
  * Service pour gérer les interactions avec l'API de chat
