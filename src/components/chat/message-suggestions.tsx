@@ -1,27 +1,27 @@
 "use client";
 
-import { useChat } from "./chat-context";
-import { Button } from "~/components/ui/button";
-import { MapPin, Clock, Utensils, Camera, Crown, History } from "lucide-react";
+import { useChat } from "../../contexts/chat-context";
+import { Button } from "@/components/ui/button";
+import { Home, Calculator, TrendingUp } from "lucide-react";
 
 const suggestions = [
   {
-    icon: MapPin,
-    title: "Planifier ma visite",
-    message: "Quelles sont les activités incontournables à voir au Château de Versailles ?",
-    description: "Découvrir les lieux essentiels",
+    icon: Home,
+    title: "Nouveau projet",
+    message: "J'ai acheté un studio à 150 000€ que je loue 600€ par mois. Est-ce que le régime réel serait avantageux ?",
+    description: "Simuler un investissement simple",
   },
   {
-    icon: Camera,
-    title: "Visite photo",
-    message: "Quels sont les plus beaux endroits pour prendre des photos ?",
-    description: "Capturer les meilleurs moments",
+    icon: Calculator,
+    title: "Avec emprunt",
+    message: "J'ai un T2 acheté 200 000€ avec un prêt de 180 000€ sur 20 ans à 3,5%. Le loyer est de 800€/mois et j'ai 2000€ de charges annuelles.",
+    description: "Calculer avec un financement",
   },
   {
-    icon: Crown,
-    title: "Histoire royale",
-    message: "Peux-tu me raconter l'histoire de Louis XIV et de la cour ?",
-    description: "Découvrir l'histoire fascinante",
+    icon: TrendingUp,
+    title: "Projet détaillé",
+    message: "Bien acheté 250 000€, loyer 1000€/mois, charges de copropriété 100€/mois, taxe foncière 1500€/an, et j'ai fait 15 000€ de travaux.",
+    description: "Analyse complète",
   },
 ];
 

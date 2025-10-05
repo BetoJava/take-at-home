@@ -9,6 +9,7 @@ ${text}
 
 # Objectif
 - Retourne UNIQUEMENT le bloc JSON entre \`\`\`json et \`\`\`
+- Ne retourne RIEN d'autre que le bloc JSON
 - Le JSON doit être valide et correctement formaté avec des doubles quotes
 - Ne retourne RIEN d'autre que le bloc JSON
 
@@ -21,7 +22,7 @@ ${text}
   loanDuration: 15;
   downPayment: 40000;
   monthlyRent: 1500;
-  occupancyRate: 100; 
+  occupancyRate: 1.0; 
   expenses: {
     annualExpenses: [
       ("Taxes foncières", 1000),

@@ -50,8 +50,8 @@ Ce système de chat modulaire offre une interface utilisateur moderne pour inter
 ### Intégration dans une Page
 
 ```tsx
-import { ChatProvider } from "~/components/chat/chat-context";
-import { ChatContainer } from "~/components/chat/chat-container";
+import { ChatProvider } from "@/components/chat/chat-context";
+import { ChatContainer } from "@/components/chat/chat-container";
 
 export default function ChatPage() {
   return (

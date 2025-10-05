@@ -3,6 +3,7 @@ import { extractAndParseJson } from "./json-extractor";
 import { EXTRACT_JSON_PROMPT } from "./prompts/extract-json";
 import { CHAT_RESPONSE_PROMPT } from "./prompts/chat-response";
 import type { ChatMessage, PropertyInvestmentData } from "@/types";
+import { env } from "@/env";
 
 /**
  * Étape 1: Extrait le contexte JSON à partir des messages
@@ -22,10 +23,10 @@ export async function extractContextFromMessages(
 
     const allMessages: ChatMessage[] = [systemMessage, ...messages];
 
-    // Appelle GPT-5 pour extraire le contexte
+    // Appelle un llm pour extraire le contexte
     const response = await callLLM({
         messages: allMessages,
-        model: "gpt-5",
+        model: env.EXTRACT_MODEL_NAME,
         temperature: 0.5,
     });
 
@@ -58,7 +59,7 @@ export async function* generateStreamingResponse(
     // Stream la réponse
     const streamGenerator = callLLMStream({
         messages: allMessages,
-        model: "gpt-5",
+        model: env.MODEL_NAME,
         temperature: 0.7,
     });
 

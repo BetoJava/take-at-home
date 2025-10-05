@@ -6,7 +6,7 @@ import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import remarkGfm from "remark-gfm";
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 
 interface MarkdownRendererProps {
   content: string;

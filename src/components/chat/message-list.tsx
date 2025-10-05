@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { type Message } from "./chat-context";
+import { type Message } from "../../contexts/chat-context";
 import { MessageBubble } from "./message-bubble";
 
 interface MessageListProps {
@@ -14,10 +14,10 @@ const defaultEmptyChild = (
   <div className="flex h-full items-center justify-center">
     <div className="text-center">
       <h2 className="text-2xl font-semibold text-muted-foreground">
-        Commencez une conversation
+        Parlez nous de votre projet
       </h2>
       <p className="mt-2 text-muted-foreground">
-        Posez une question ou utilisez une des suggestions ci-dessous
+        Le prix d'achat, le loyer, les charges, les travaux, etc.
       </p>
     </div>
   </div>

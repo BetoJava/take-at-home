@@ -32,27 +32,27 @@ export const propertyInvestmentDataSchema = z.object({
 
   // Loan
   /** Montant de l'emprunt (si emprunt), si payé cash : 0 */
-  loanAmount: z.number().optional(),
+  loanAmount: z.number().nullable().optional(),
   /** Taux d'intérêt de l'emprunt (si pas donné, 0.035 si 15 ans, 0.039 si 20 ans) */
-  loanRate: z.number().optional(),
+  loanRate: z.number().nullable().optional(),
   /** Durée de l'emprunt en années */
-  loanDuration: z.number().optional(),
+  loanDuration: z.number().nullable().nullable().optional(),
   /** Apport initial (si donné, sinon null) */
-  downPayment: z.number().optional(),
+  downPayment: z.number().nullable().optional(),
 
   // Income & Expenses
   /** Loyer mensuel */
   monthlyRent: z.number().nullable(),
-  /** Taux d'occupation (si donné, sinon 100%) */
+  /** Taux d'occupation (si donné, sinon 1.0) */
   occupancyRate: z.number().nullable().optional(),
   /** Structure des dépenses et charges */
   expenses: investmentExpensesSchema,
 
   // Projection
   /** Durée de projection en années */
-  projectionDuration: z.number().optional(),
+  projectionDuration: z.number().nullable().optional(),
   /** Taux d'augmentation du loyer en pourcentage */
-  rentIncreaseRate: z.number().optional(),
+  rentIncreaseRate: z.number().nullable().optional(),
 });
 
 /**
@@ -63,28 +63,9 @@ export const chatInputSchema = z.object({
   previousContext: propertyInvestmentDataSchema.nullable().optional(),
 });
 
-// ============================================================================
+
 // Types inférés à partir des schémas Zod
-// ============================================================================
-
-/**
- * Type pour les messages de chat
- */
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
-
-/**
- * Structure des dépenses (charges) liées à un investissement locatif
- */
 export type InvestmentExpenses = z.infer<typeof investmentExpensesSchema>;
-
-/**
- * Données complètes d'un investissement locatif LMNP
- */
-export type PropertyInvestmentData = z.infer<
-  typeof propertyInvestmentDataSchema
->;
-
-/**
- * Input pour la procédure de chat
- */
+export type PropertyInvestmentData = z.infer<typeof propertyInvestmentDataSchema>;
 export type ChatInput = z.infer<typeof chatInputSchema>;

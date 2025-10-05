@@ -1,11 +1,13 @@
 import { callLLM } from "./openai";
 import { FIX_JSON_PROMPT } from "./prompts/fix-json";
 import type { ChatMessage } from "@/types";
+import { env } from "@/env";
 
 /**
  * Extrait un bloc JSON d'un texte qui contient ```json...```
  */
 export function extractJsonBlock(text: string): string {
+  console.log("Text to extract JSON block:", text);
   // Cherche un bloc JSON entre ```json et ```
   const jsonBlockRegex = /```json\s*([\s\S]*?)\s*```/;
   const match = text.match(jsonBlockRegex);
@@ -31,11 +33,11 @@ export function parseJson<T = unknown>(jsonString: string): T {
 }
 
 /**
- * Extrait et parse un bloc JSON avec retry via GPT-5-mini si échec
+ * Extrait et parse un bloc JSON avec retry via un llm si échec
  */
 export async function extractAndParseJson<T = unknown>(
   text: string,
-  maxRetries = 2,
+  maxRetries = 3,
 ): Promise<T> {
   let currentText = text;
   let lastError: Error | null = null;
@@ -49,6 +51,7 @@ export async function extractAndParseJson<T = unknown>(
       return parseJson<T>(jsonString);
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+      console.log(lastError.message);
 
       // Si c'est le dernier essai, on lance l'erreur
       if (attempt === maxRetries) {
@@ -57,9 +60,9 @@ export async function extractAndParseJson<T = unknown>(
         );
       }
 
-      // Sinon, on demande à GPT-5-mini de corriger le JSON
+      // Sinon, on demande à un llm de corriger le JSON
       console.log(
-        `Attempt ${attempt + 1} failed, asking GPT-5-mini to fix JSON...`,
+        `Attempt ${attempt + 1} failed, asking un llm to fix JSON...`,
       );
 
       const fixPrompt = FIX_JSON_PROMPT(currentText);
@@ -72,7 +75,7 @@ export async function extractAndParseJson<T = unknown>(
 
       currentText = await callLLM({
         messages,
-        model: "gpt-5-mini",
+        model: env.EXTRACT_MODEL_NAME,
         temperature: 0.3, // Basse température pour plus de précision
       });
     }

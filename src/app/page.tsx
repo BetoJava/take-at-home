@@ -1,53 +1,95 @@
-import Link from "next/link";
+"use client";
 
-import { LatestPost } from "@/app/_components/post";
-import { api, HydrateClient } from "@/trpc/server";
+import { useState } from "react";
+import { ChatContainer } from "@/components/chat/chat-container";
+import { SimulationPanel } from "@/components/simulation/simulation-sheet";
+import { BarChart3Icon, MessageSquareIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { usePropertyInvestment } from "@/contexts/property-investment-context";
 
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-
-  void api.post.getLatest.prefetch();
+export default function Home() {
+  const [showSimulation, setShowSimulation] = useState(true);
+  const { data } = usePropertyInvestment();
+  const hasData = data?.purchasePrice && data?.monthlyRent;
 
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
+    <main className="flex h-screen flex-col bg-background">
+      {/* Header */}
+      <header className="border-b bg-card/50 backdrop-blur-sm">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <BarChart3Icon className="size-6" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold">Simulateur LMNP</h1>
+              <p className="text-xs text-muted-foreground hidden sm:block">Micro-BIC vs Réel</p>
+            </div>
           </div>
 
-          <LatestPost />
+          {/* Toggle button for mobile/tablet */}
+          <div className="flex items-center gap-2">
+            {/* {hasData && (
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+                <span className="flex size-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                  Données disponibles
+                </span>
+              </div>
+            )} */}
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSimulation(!showSimulation)}
+              className={cn(
+                "gap-2 lg:hidden",
+                showSimulation && "bg-primary text-primary-foreground"
+              )}
+            >
+              {showSimulation ? (
+                <>
+                  <MessageSquareIcon className="size-4" />
+                  Chat
+                </>
+              ) : (
+                <>
+                  <BarChart3Icon className="size-4" />
+                  Simulation
+                  {hasData && <span className="flex size-2 rounded-full bg-green-500 animate-pulse" />}
+                </>
+              )}
+            </Button>
+          </div>
         </div>
-      </main>
-    </HydrateClient>
+      </header>
+
+      {/* Layout principal : Chat + Simulation côte à côte */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Chat Interface */}
+        <div
+          className={cn(
+            "flex-1 overflow-hidden transition-all duration-300",
+            // Sur mobile/tablet, on cache le chat quand on affiche la simulation
+            showSimulation ? "hidden lg:flex" : "flex"
+          )}
+        >
+          <ChatContainer />
+        </div>
+
+        {/* Simulation Panel */}
+        <div
+          className={cn(
+            "overflow-hidden transition-all duration-300",
+            "lg:flex",
+            // Sur mobile/tablet, contrôle de l'affichage via le bouton toggle
+            showSimulation ? "flex" : "hidden"
+          )}
+        >
+          <SimulationPanel />
+        </div>
+      </div>
+    </main>
   );
 }

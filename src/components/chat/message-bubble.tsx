@@ -1,10 +1,10 @@
 "use client";
 
-import { type Message } from "./chat-context";
+import { type Message } from "../../contexts/chat-context";
 import { MarkdownRenderer } from "./markdown-renderer";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Bot } from "lucide-react";
-import { cn } from "~/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface MessageBubbleProps {
     message: Message;
@@ -31,23 +31,6 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                             : "bg-muted text-muted-foreground",
                     )}
                 >
-                    {/* Affichage des pièces jointes */}
-                    {message.attachments && message.attachments.length > 0 && (
-                        <div className="mb-2 space-y-2">
-                            {message.attachments.map((attachment, index) => (
-                                <div key={index} className="rounded-md border bg-background/50 p-2">
-                                    {attachment.type === "image" && (
-                                        <img
-                                            src={attachment.url}
-                                            alt={attachment.name}
-                                            className="max-h-48 rounded-md object-contain"
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
                     {/* Contenu du message */}
                     <div className="prose prose-sm max-w-none dark:prose-invert">
                         {isUser ? (

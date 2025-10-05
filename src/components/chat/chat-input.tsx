@@ -1,40 +1,29 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useChat } from "./chat-context";
-import { Button } from "~/components/ui/button";
-import { Textarea } from "~/components/ui/textarea";
-import { Send, Paperclip, Image, X } from "lucide-react";
-import { cn } from "~/lib/utils";
+import { useChat } from "../../contexts/chat-context";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Send, Paperclip, X, Mic, Square } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAudioRecorder } from "@/lib/hooks/use-audio-recorder";
+import { toast } from "sonner";
 
 export function ChatInput() {
   const { sendMessage, state } = useChat();
   const [input, setInput] = useState("");
-  const [attachments, setAttachments] = useState<Array<{
-    type: "image";
-    url: string;
-    name: string;
-    file: File;
-  }>>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { recordingState, startRecording, stopRecording, recordingTime } = useAudioRecorder();
+  const [isTranscribing, setIsTranscribing] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!input.trim() && attachments.length === 0) return;
     if (state.isLoading) return;
-
-    const messageAttachments = attachments.map(({ url, name, type }) => ({
-      type,
-      url,
-      name,
-    }));
 
     // Vider l'input immédiatement
     const messageContent = input.trim();
     setInput("");
-    setAttachments([]);
     
     // Reset textarea height
     if (textareaRef.current) {
@@ -42,7 +31,7 @@ export function ChatInput() {
     }
 
     // Envoyer le message
-    await sendMessage(messageContent, messageAttachments);
+    await sendMessage(messageContent);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -50,43 +39,6 @@ export function ChatInput() {
       e.preventDefault();
       handleSubmit(e);
     }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    files.forEach((file) => {
-      if (file.type.startsWith("image/")) {
-        const url = URL.createObjectURL(file);
-        setAttachments((prev) => [
-          ...prev,
-          {
-            type: "image",
-            url,
-            name: file.name,
-            file,
-          },
-        ]);
-      }
-    });
-    
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const removeAttachment = (index: number) => {
-    setAttachments((prev) => {
-      const newAttachments = [...prev];
-      // Nettoyer l'URL object
-      const attachment = newAttachments[index];
-      if (attachment) {
-        URL.revokeObjectURL(attachment.url);
-      }
-      newAttachments.splice(index, 1);
-      return newAttachments;
-    });
   };
 
   const adjustTextareaHeight = () => {
@@ -97,38 +49,64 @@ export function ChatInput() {
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      {/* Aperçu des pièces jointes */}
-      {attachments.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {attachments.map((attachment, index) => (
-            <div
-              key={index}
-              className="relative rounded-lg border bg-muted p-2"
-            >
-              <img
-                src={attachment.url}
-                alt={attachment.name}
-                className="h-16 w-16 rounded object-cover"
-              />
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0"
-                onClick={() => removeAttachment(index)}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-              <p className="mt-1 text-xs text-muted-foreground truncate max-w-16">
-                {attachment.name}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+  const handleAudioRecording = async () => {
+    if (recordingState === "idle") {
+      try {
+        await startRecording();
+        toast.info("Enregistrement en cours... (max 1 minute)");
+      } catch (error) {
+        console.error("Erreur lors du démarrage de l'enregistrement:", error);
+        toast.error("Impossible d'accéder au microphone");
+      }
+    } else if (recordingState === "recording") {
+      try {
+        setIsTranscribing(true);
+        const audioFile = await stopRecording();
 
+        if (!audioFile) {
+          toast.error("Erreur lors de l'arrêt de l'enregistrement");
+          setIsTranscribing(false);
+          return;
+        }
+
+        // Envoyer le fichier audio à l'API de transcription
+        const formData = new FormData();
+        formData.append("audio", audioFile);
+
+        const response = await fetch("/api/transcribe", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de la transcription");
+        }
+
+        const { text } = await response.json() as { text: string };
+
+        // Ajouter la transcription à la suite du texte existant
+        setInput(prevInput => {
+          const separator = prevInput.trim() ? " " : "";
+          return prevInput + separator + text;
+        });
+        toast.success("Audio transcrit avec succès");
+
+        // Focus sur le textarea
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          adjustTextareaHeight();
+        }
+      } catch (error) {
+        console.error("Erreur lors de la transcription:", error);
+        toast.error("Erreur lors de la transcription de l'audio");
+      } finally {
+        setIsTranscribing(false);
+      }
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3 ">
       {/* Zone de saisie */}
       <div className="relative flex items-end gap-2">
         <div className="flex-1 relative">
@@ -148,16 +126,30 @@ export function ChatInput() {
             style={{ height: "44px" }}
           />
           
-          {/* Bouton d'ajout de fichiers */}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+          {/* Boutons d'actions */}
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {/* Bouton d'enregistrement audio */}
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0"
-              onClick={() => fileInputRef.current?.click()}
+              className={cn(
+                "h-8 w-8 p-0",
+                recordingState === "recording" && "text-red-500 hover:text-red-600"
+              )}
+              onClick={handleAudioRecording}
+              disabled={isTranscribing || state.isLoading}
+              title={
+                recordingState === "recording"
+                  ? `Arrêter l'enregistrement (${recordingTime}s)`
+                  : "Enregistrer un message vocal"
+              }
             >
-              <Paperclip className="h-4 w-4" />
+              {recordingState === "recording" ? (
+                <Square className="h-4 w-4 fill-current" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -166,22 +158,12 @@ export function ChatInput() {
         <Button
           type="submit"
           size="sm"
-          disabled={(!input.trim() && attachments.length === 0) || state.isLoading}
+          disabled={!input.trim() || state.isLoading || recordingState === "recording" || isTranscribing}
           className="h-11 w-11 p-0"
         >
           <Send className="h-4 w-4" />
         </Button>
       </div>
-
-      {/* Input file caché */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={handleFileSelect}
-      />
     </form>
   );
 }

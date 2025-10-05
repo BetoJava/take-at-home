@@ -1,6 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, type ReactNode } from "react";
+import { api } from "@/trpc/react";
+import { usePropertyInvestment } from "@/contexts/property-investment-context";
+import type { PropertyInvestmentData } from "@/types";
 
 export interface Message {
   id: string;
@@ -8,11 +11,6 @@ export interface Message {
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
-  attachments?: Array<{
-    type: "image";
-    url: string;
-    name: string;
-  }>;
 }
 
 interface ChatState {
@@ -90,13 +88,14 @@ interface ChatContextType {
   stopStreaming: (id: string) => void;
   setLoading: (loading: boolean) => void;
   clearMessages: () => void;
-  sendMessage: (content: string, attachments?: Message["attachments"]) => Promise<void>;
+  sendMessage: (content: string) => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(chatReducer, initialState);
+  const { data: propertyData, updateData: updatePropertyData } = usePropertyInvestment();
 
   const addMessage = (message: Omit<Message, "id" | "timestamp">): string => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -129,12 +128,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "CLEAR_MESSAGES" });
   };
 
-  const sendMessage = async (content: string, attachments?: Message["attachments"]) => {
+  const sendMessage = async (content: string) => {
     // Ajouter le message utilisateur
     addMessage({
       role: "user",
       content,
-      attachments,
     });
 
     // Créer le message assistant en streaming
@@ -148,23 +146,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setLoading(true);
 
     try {
-      // Préparer l'historique de la conversation pour Mistral
-      const conversationHistory = state.messages.map(msg => ({
+      // Préparer l'historique de la conversation
+      const messages = [...state.messages, { role: "user" as const, content }].map((msg) => ({
         role: msg.role,
         content: msg.content,
-        attachments: msg.attachments,
       }));
 
-      // Appel API avec streaming
-      const response = await fetch("/api/chat-interface", {
+      let accumulatedContent = "";
+
+      // Appel à l'API de streaming
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: content,
-          attachments,
-          conversationHistory,
+          messages,
+          previousContext: propertyData,
         }),
       });
 
@@ -179,42 +177,44 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         throw new Error("Impossible de lire la réponse");
       }
 
-      let accumulatedContent = "";
-
       while (true) {
         const { done, value } = await reader.read();
-
         if (done) break;
 
         const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
+        const lines = chunk.split("\n").filter((line) => line.trim());
 
         for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6);
+          try {
+            const result = JSON.parse(line) as 
+              | { type: "context"; data: PropertyInvestmentData }
+              | { type: "chunk"; data: string }
+              | { type: "done" };
 
-            if (data === "[DONE]") {
+            if (result.type === "context") {
+              // Mise à jour du contexte d'investissement
+              updatePropertyData(result.data);
+            } else if (result.type === "chunk") {
+              // Mise à jour du message avec le nouveau chunk
+              accumulatedContent += result.data;
+              updateMessage(assistantMessageId, accumulatedContent);
+            } else if (result.type === "done") {
               // Fin du streaming
-              break;
+              stopStreaming(assistantMessageId);
+              setLoading(false);
             }
-
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.content) {
-                accumulatedContent += parsed.content;
-                updateMessage(assistantMessageId, accumulatedContent);
-              }
-            } catch (e) {
-              // Ignorer les erreurs de parsing JSON
-              console.warn("Erreur parsing JSON:", e);
-            }
+          } catch (e) {
+            // Ignorer les lignes mal formatées
+            console.warn("Erreur parsing chunk:", e);
           }
         }
       }
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
-      updateMessage(assistantMessageId, "Désolé, une erreur s'est produite lors de la communication avec Mistral AI. Vérifiez votre configuration.");
-    } finally {
+      updateMessage(
+        assistantMessageId,
+        "Désolé, une erreur s'est produite lors de la communication avec l'IA."
+      );
       stopStreaming(assistantMessageId);
       setLoading(false);
     }

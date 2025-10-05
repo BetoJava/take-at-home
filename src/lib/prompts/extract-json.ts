@@ -18,7 +18,7 @@ D'après la conversation et des données extraites du client, tu dois extraire l
 
 // Income & Expenses
 - monthlyRent: number | null; : loyer mensuel
-- occupancyRate?: number | null; : si donné, sinon 100% 
+- occupancyRate?: number | null; : si donné, sinon 1.0
 expenses: {
   annualExpenses: Liste des charges annuelles dans le format [("Nom de la charge", montant)]
   monthlyExpenses: Liste des charges mensuelles dans le format [("Nom de la charge", montant)]
@@ -26,8 +26,15 @@ expenses: {
   furnitureValue?: number | null; : valeur des meubles (si donné, sinon null)
 } 
 
+# Données déjà extraites du client :
+${context}
+
+# Conversation :
+${messages}
+
 # IMPORTANT: 
-- Ta réponse DOIT contenir un bloc JSON valide entre des balises \`\`\`json et \`\`\`
+- Ta réponse DOIT contenir SEULEMENT un bloc JSON valide entre des balises \`\`\`json et \`\`\`
+- Ne retourne RIEN d'autre que le bloc JSON
 - Le JSON doit être valide et correctement formaté avec des doubles quotes
 - Tous les champs doivent être présents
 
@@ -40,7 +47,7 @@ expenses: {
   loanDuration: 15;
   downPayment: 40000;
   monthlyRent: 1500;
-  occupancyRate: 100; 
+  occupancyRate: 1.0; 
   expenses: {
     annualExpenses: [
       ("Taxes foncières", 1000),
@@ -56,12 +63,6 @@ expenses: {
   projectionDuration: 10;
   rentIncreaseRate: 1.5;
 }
-\`\`\`
-
-# Données déjà extraites du client :
-${context}
-
-# Conversation :
-${messages}`;
+\`\`\``;
 
 
