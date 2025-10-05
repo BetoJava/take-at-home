@@ -3,7 +3,6 @@ import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
-import { TRPCReactProvider } from "@/trpc/react";
 import { PropertyInvestmentProvider } from "@/contexts/property-investment-context";
 import { ChatProvider } from "@/contexts/chat-context";
 import { Toaster } from "@/components/ui/sonner";
@@ -25,14 +24,12 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${geist.variable}`}>
       <body>
-        <TRPCReactProvider>
-          <PropertyInvestmentProvider>
-            <ChatProvider>
-              {children}
-              <Toaster />
-            </ChatProvider>
-          </PropertyInvestmentProvider>
-        </TRPCReactProvider>
+        <PropertyInvestmentProvider>
+          <ChatProvider>
+            {children}
+            <Toaster />
+          </ChatProvider>
+        </PropertyInvestmentProvider>
       </body>
     </html>
   );
